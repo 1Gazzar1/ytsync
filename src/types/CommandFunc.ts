@@ -1,0 +1,1 @@
+export type CommandFunc = (args: string[]) => Promise<void> | void;
