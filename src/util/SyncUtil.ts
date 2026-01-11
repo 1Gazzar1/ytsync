@@ -21,13 +21,13 @@ export async function getMusicSubDirs() {
     await ensureMusicDirectory();
     const allFiles = await fs.readdir(MUSIC_DIR);
 
-    const dirs = await Promise.all(
-        allFiles.filter(async (dir) => {
-            const p = path.join(MUSIC_DIR, dir);
-            const stats = await fs.stat(p);
-            return stats.isDirectory();
-        })
-    );
+    const dirs = [];
+    for (const dir of allFiles) {
+        const p = path.join(MUSIC_DIR, dir);
+        if ((await fs.stat(p)).isDirectory()) {
+            dirs.push(dir);
+        }
+    }
     return dirs;
 }
 
@@ -41,9 +41,10 @@ export async function downloadPlaylist(
     const vidInfos = await getVideoInfos(service, playlistId);
 
     // skip if user already has it
-    const vidsToBeDownloadedInfo = vidInfos.filter(
-        (vid) => !!(localVidIds && !localVidIds.includes(vid[0]))
-    );
+
+    const vidsToBeDownloadedInfo = localVidIds
+        ? vidInfos.filter((v) => !localVidIds.includes(v[0]))
+        : vidInfos;
 
     // do it sequentially (we're bottle necked by the internet speed anyways )
     const time = Date.now();
@@ -70,7 +71,7 @@ export async function downloadPlaylist(
     if (vidsToBeDownloadedInfo.length === 0) {
         console.log("Already Up to date! 😇\n\n");
     } else {
-        const timeSpent = `${Math.round(secs / 60)
+        const timeSpent = `${Math.floor(secs / 60)
             .toString()
             .padStart(2, "0")}:${(secs % 60).toString().padStart(2, "0")}`;
         console.log(`☑️  Finished Playlist in ${timeSpent} mins\n\n`);

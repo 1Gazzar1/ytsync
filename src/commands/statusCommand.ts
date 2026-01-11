@@ -54,34 +54,45 @@ export async function statusCommand(...args: any[]) {
                 "i think you changed a playlist name or something, make sure remote and local have the same name"
             );
 
-        const arr1 = localPlaylist.vidIds.sort();
-        const arr2 = remotePlaylist.vidIds.sort();
-
-        // knowing EXACTLY what's different is slow right ?
-        const noDiff =
-            arr1.length === arr2.length &&
-            arr1.every((val, idx) => val === arr2[idx]);
+        const { added, removed, sameCount } = diffPlaylists(
+            localPlaylist.vidIds,
+            remotePlaylist.vidIds
+        );
 
         const chosenOne = remotePlaylists.find(
             (pl) => pl.id === remotePlaylist.playlistId
         );
-        if (noDiff) {
-            console.log(`${chosenOne?.title} is Up to Date! 😇\n`);
-            continue;
-        }
-        if (arr1.length < arr2.length) {
-            console.log(
-                `🔃 There's ${arr2.length - arr1.length} songs in ${
-                    chosenOne?.title
-                } that need updating.\n`
-            );
-        }
-        //edge cases bruh.
-        if (arr1.length > arr2.length) {
-            // user is trolling fr.
-            console.log(
-                `Your local playlist(${chosenOne?.title}) is ahead of youtube's lol.\n`
-            );
+        if (sameCount) {
+            console.log(`'${chosenOne?.title}' is Up to Date! 😇\n`);
+        } else {
+            if (added.length) {
+                console.log(
+                    `🔃 There's ${added.length} songs in '${chosenOne?.title}' that need updating.\n`
+                );
+            }
+            //edge cases bruh.
+            if (removed.length) {
+                // user is trolling fr.
+                console.log(
+                    `Your local playlist(${chosenOne?.title}) is ahead of youtube's lol.\n`
+                );
+            }
         }
     }
+}
+function diffPlaylists(local: string[], remote: string[]) {
+    const localSet = new Set(local);
+    const remoteSet = new Set(remote);
+
+    const added = remote.filter((id) => !localSet.has(id));
+    const removed = local.filter((id) => !remoteSet.has(id));
+
+    return {
+        added, // download these
+        removed, // optionally delete
+        sameCount:
+            local.length === remote.length &&
+            added.length === 0 &&
+            removed.length === 0,
+    };
 }

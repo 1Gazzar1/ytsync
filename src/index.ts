@@ -12,7 +12,6 @@ const { values, positionals } = parseArgs({
     options: {},
     allowPositionals: true,
 });
-export const flags = values;
 
 const commandReg: Record<string, CommandFunc> = {
     help: helpCommand,
