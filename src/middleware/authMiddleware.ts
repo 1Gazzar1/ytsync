@@ -13,6 +13,7 @@ export function refreshTokenMiddleWare<
             console.log(error);
             if (error.response.status === 401 && retires > 0) {
                 const tokens = await client.refreshAccessToken();
+                console.log("🗼Refreshed Tokens!");
 
                 await modifyConfig({
                     access_token: tokens.credentials.access_token!,

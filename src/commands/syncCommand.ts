@@ -9,7 +9,7 @@ import { getFormattedPlaylists } from "@/util/Youtube.js";
 import { google } from "googleapis";
 import path from "node:path";
 import prompts from "prompts";
-import * as fs from "node:fs/promises";
+import { readStatusFile } from "@/util/readStatusFile.js";
 
 export async function syncCommand(args: string[]) {
     const client = await getOauthClient();
@@ -56,13 +56,9 @@ export async function syncCommand(args: string[]) {
         const dirs = await getMusicSubDirs();
         let localVidIds;
         if (dirs.includes(playlist.title)) {
-            const txt = (
-                await fs.readFile(
-                    path.join(MUSIC_DIR, playlist.title, "status.json")
-                )
-            ).toString();
-            const obj: { playlistId: string; vidIds: string[] } =
-                JSON.parse(txt);
+            const obj = await readStatusFile(
+                path.join(MUSIC_DIR, playlist.title)
+            );
             localVidIds = obj.vidIds;
         }
 
