@@ -19,7 +19,6 @@ function helpCommand() {
     );
 }
 
-
 function main() {
     if (args.length === 0) {
         console.log("try help");

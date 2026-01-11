@@ -3,7 +3,7 @@ import * as fs from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
 
-const HOME = homedir();
+export const HOME = homedir();
 const YTSYNC = path.join(`${HOME}`, `.config`, `ytsync`);
 const CONFIG_FILE = path.join(YTSYNC, "config.json");
 async function ensureConfig() {

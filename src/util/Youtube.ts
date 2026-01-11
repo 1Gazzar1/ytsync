@@ -1,21 +1,35 @@
 import type { Playlist } from "@/types/Playlist.js";
 import type { youtube_v3 } from "googleapis";
 
-export async function getVideoIds(
+export type VidInfo = [vidId: string, vidTitle: string];
+export async function getVideoInfos(
     service: youtube_v3.Youtube,
     playlistId: string
-) {
+): Promise<VidInfo[]> {
+    /* returns a list of tuples (vidId , vidTitle) */
     const videos = await service.playlistItems.list({
         playlistId: playlistId,
         part: ["snippet", "status"],
         maxResults: 500,
     });
-    return videos.data.items
-        ?.map((vid) => {
-            if (vid.status?.privacyStatus === "public")
-                return vid.snippet?.resourceId?.videoId;
-        })
-        .filter((id) => id !== undefined && id !== null);
+    const vidsInfo = videos.data.items?.map((vid) => {
+        if (
+            vid.status?.privacyStatus === "public" &&
+            vid.snippet?.resourceId?.videoId &&
+            vid.snippet?.title
+        ) {
+            const out: VidInfo = [
+                vid.snippet.resourceId.videoId,
+                vid.snippet.title,
+            ];
+            return out;
+        }
+    });
+
+    if (!vidsInfo) throw new Error("failed to fetch Videos");
+
+    const final = vidsInfo.filter((tuple) => !!tuple);
+    return final;
 }
 
 export async function getFormattedPlaylists(service: youtube_v3.Youtube) {
@@ -24,8 +38,9 @@ export async function getFormattedPlaylists(service: youtube_v3.Youtube) {
         mine: true,
         maxResults: 100,
     });
+    if (!playlists.data.items) throw new Error("failed to fetch playlists");
     const playlistObjs = playlists.data.items
-        ?.map((pl) => {
+        .map((pl) => {
             if (
                 !pl.id ||
                 !pl.snippet ||
@@ -46,5 +61,6 @@ export async function getFormattedPlaylists(service: youtube_v3.Youtube) {
         })
         .filter((pl) => pl !== undefined);
 
-    return playlistObjs;
+    // sort the playlists
+    return playlistObjs.sort((a, b) => a.title.localeCompare(b.title));
 }
