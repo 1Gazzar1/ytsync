@@ -23,16 +23,28 @@ export async function syncCommand(args: string[]) {
 
     if (!playlists) throw new Error("failed to fetch playlists");
 
-    const { playlistIds } = await prompts([
-        {
-            type: "multiselect",
-            name: "playlistIds",
-            message: "What Playlist(s) do you want to sync ?",
-            choices: playlists?.map((pl) => {
-                return { title: pl.title, value: pl.id };
-            }),
-        },
-    ]);
+    let playlistIds: string[];
+    // if the user inputted any additional args (user knows what he's doing😉)
+    // then don't prompt the user and automatically sync stuff.
+    if (args.length === 0) {
+        const temp = await prompts([
+            {
+                type: "multiselect",
+                name: "playlistIds",
+                message: "What Playlist(s) do you want to sync ?",
+                choices: playlists?.map((pl) => {
+                    return { title: pl.title, value: pl.id };
+                }),
+            },
+        ]);
+        playlistIds = temp.playlistIds;
+    } else {
+        // automatically get playlists that the user wrote.
+        const lowerCaseArgs = args.map((arg) => arg.toLowerCase());
+        playlistIds = playlists
+            .filter((pl) => lowerCaseArgs.includes(pl.title.toLowerCase()))
+            .map((pl) => pl.id);
+    }
     await ensureMusicDirectory();
 
     for (const id of playlistIds) {
@@ -56,7 +68,7 @@ export async function syncCommand(args: string[]) {
 
         const p = path.join(MUSIC_DIR, playlist.title);
 
+        console.log(`✨ Starting Playlist: ${playlist.title}\n`);
         await downloadPlaylist(service, id, p, localVidIds);
-        console.log(`☑️ Finished Playlist: ${playlist.title}`);
     }
 }

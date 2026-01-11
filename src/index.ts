@@ -4,8 +4,15 @@ import { syncCommand } from "@/commands/syncCommand.js";
 import { CommandFunc } from "@/types/CommandFunc.js";
 import { refreshTokenMiddleWare } from "@/middleware/authMiddleware.js";
 
-const args = argv.slice(2);
-console.log(args);
+import { parseArgs } from "node:util";
+
+const { values, positionals } = parseArgs({
+    args: argv.slice(2),
+    options: {},
+    allowPositionals: true,
+});
+export const flags = values;
+
 const commandReg: Record<string, CommandFunc> = {
     help: helpCommand,
     init: initCommand,
@@ -20,16 +27,16 @@ function helpCommand() {
 }
 
 function main() {
-    if (args.length === 0) {
-        console.log("try help");
+    if (positionals.length === 0) {
+        console.log("try to type 'ytsync help'");
         return;
     }
-    if (!(args[0] in commandReg)) {
+    if (!(positionals[0] in commandReg)) {
         console.log("UNKNOWN COMMAND");
         return;
     }
     try {
-        commandReg[args[0]](args.slice(1));
+        commandReg[positionals[0]](positionals.slice(1));
     } catch (error) {
         console.error(error);
     }

@@ -46,6 +46,7 @@ export async function downloadPlaylist(
     );
 
     // do it sequentially (we're bottle necked by the internet speed anyways )
+    const time = Date.now();
     for (let i = 0; i < vidsToBeDownloadedInfo.length; i++) {
         const info = vidsToBeDownloadedInfo[i];
 
@@ -56,12 +57,23 @@ export async function downloadPlaylist(
         };
 
         console.log(
-            `🔃 No. ${i + 1} of ${vidsToBeDownloadedInfo.length} Downloading: ${
-                songName.title
-            } ,`
+            `🔃 No. ${i + 1} of ${
+                vidsToBeDownloadedInfo.length
+            } - Downloading: ${songName.title}`
         );
         await downloadSong(info[0], p, songName);
-        console.log(`✅ ${songName.title} Downloaded Successfully 🎵`);
+        console.log(`✅ ${songName.title} Downloaded Successfully 🎵\n`);
+    }
+    const now = Date.now();
+    const secs = Math.round((now - time) / 1000); // in seconds
+
+    if (vidsToBeDownloadedInfo.length === 0) {
+        console.log("Already Up to date! 😇\n\n");
+    } else {
+        const timeSpent = `${Math.round(secs / 60)
+            .toString()
+            .padStart(2, "0")}:${(secs % 60).toString().padStart(2, "0")}`;
+        console.log(`☑️  Finished Playlist in ${timeSpent} mins\n\n`);
     }
 
     // make a status.json file to track vid ids
