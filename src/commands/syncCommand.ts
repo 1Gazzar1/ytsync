@@ -57,8 +57,6 @@ export async function syncCommand(args: string[]) {
         const p = path.join(MUSIC_DIR, playlist.title);
 
         await downloadPlaylist(service, id, p, localVidIds);
-        console.log(
-            `✅ Finished Playlist with Name: ${playlist.title} ,Id: ${playlist.id}`
-        );
+        console.log(`☑️ Finished Playlist: ${playlist.title}`);
     }
 }

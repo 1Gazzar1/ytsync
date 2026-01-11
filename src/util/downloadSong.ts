@@ -11,6 +11,6 @@ export async function downloadSong(
 ) {
     const url = `https://www.youtube.com/watch?v=${id}`;
     await execAsync(
-        `yt-dlp -x --audio-format ${songName.format} --quiet --add-metadata --embed-thumbnail -o "${songName.title}.${songName.format}" -P ${path} "${url}"`
+        `yt-dlp -x --audio-format ${songName.format} --quiet --add-metadata --embed-thumbnail -o "${songName.title}.${songName.format}" -P "${path}" "${url}"`
     );
 }

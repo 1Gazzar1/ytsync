@@ -35,15 +35,19 @@ export async function downloadPlaylist(
     service: youtube_v3.Youtube,
     playlistId: string,
     p: string,
-    localVidIds: string[] | undefined,
+    localVidIds?: string[],
     format: AudioFormats = "mp3"
 ) {
     const vidInfos = await getVideoInfos(service, playlistId);
 
+    // skip if user already has it
+    const vidsToBeDownloadedInfo = vidInfos.filter(
+        (vid) => !!(localVidIds && !localVidIds.includes(vid[0]))
+    );
+
     // do it sequentially (we're bottle necked by the internet speed anyways )
-    for (const info of vidInfos) {
-        // skip if user already has it
-        if (localVidIds && localVidIds.includes(info[0])) continue;
+    for (let i = 0; i < vidsToBeDownloadedInfo.length; i++) {
+        const info = vidsToBeDownloadedInfo[i];
 
         // init the song name by Sanitizing the name, format then passing it to yt-dlp
         const songName: SongName = {
@@ -51,11 +55,13 @@ export async function downloadPlaylist(
             format: format,
         };
 
-        console.log("Processing Song:", songName.title);
-        await downloadSong(info[0], p, songName);
         console.log(
-            `🎵 Finished Song with Name: ${songName.title},Id: ${info[0]} `
+            `🔃 No. ${i + 1} of ${vidsToBeDownloadedInfo.length} Downloading: ${
+                songName.title
+            } ,`
         );
+        await downloadSong(info[0], p, songName);
+        console.log(`✅ ${songName.title} Downloaded Successfully 🎵`);
     }
 
     // make a status.json file to track vid ids
