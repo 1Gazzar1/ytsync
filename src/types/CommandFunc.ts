@@ -1,4 +1,6 @@
+import { Flags } from "@/types/Flags.js";
+
 export type CommandFunc = (
-    flags: Record<string, any>,
+    flags: Flags,
     ...args: string[]
 ) => Promise<void> | void;

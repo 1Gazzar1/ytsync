@@ -1,9 +1,10 @@
 import { getOauthClient } from "@/oAuth2Client.js";
+import { Flags } from "@/types/Flags.js";
 import { modifyConfig } from "@/util/initConfig.js";
 
 const client = await getOauthClient();
 export function refreshTokenMiddleWare<
-    T extends (flags: Record<string, any>, ...args: any[]) => Promise<void>
+    T extends (flags: Flags, ...args: any[]) => Promise<void>
 >(fn: T): T {
     let retires = 2;
     return (async (flags, ...args): Promise<void> => {

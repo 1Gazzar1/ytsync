@@ -1,26 +1,29 @@
 import { getOauthClient } from "@/oAuth2Client.js";
 import {
-    downloadPlaylist,
     ensureMusicDirectory,
     getMusicSubDirs,
     MUSIC_DIR,
+    processPlaylist,
 } from "@/util/SyncUtil.js";
 import { getFormattedPlaylists } from "@/util/Youtube.js";
 import { google } from "googleapis";
 import path from "node:path";
 import prompts from "prompts";
 import { readStatusFile } from "@/util/readStatusFile.js";
+import { DownloadOption, Flags } from "@/types/Flags.js";
 
-export async function syncCommand(
-    flags: Record<string, any>,
-    ...args: string[]
-) {
+export async function syncCommand(flags: Flags, ...args: string[]) {
     const client = await getOauthClient();
 
     const service = google.youtube({
         version: "v3",
         auth: client,
     });
+
+    // flags
+    const { force, format, verbose } = flags;
+    const dryRun = flags["dry-run"];
+
     console.log("Getting Playlists...");
     const playlists = await getFormattedPlaylists(service);
 
@@ -48,6 +51,17 @@ export async function syncCommand(
             .filter((pl) => lowerCaseArgs.includes(pl.title.toLowerCase()))
             .map((pl) => pl.id);
     }
+    if (force) {
+        const res = await prompts({
+            type: "confirm",
+            name: "force",
+            message:
+                "🚨🚨 Force enabled 🚨🚨, Are you sure you want to force download everything?",
+        });
+        if (res.force === false) {
+            return;
+        }
+    }
     await ensureMusicDirectory();
 
     for (const id of playlistIds) {
@@ -67,7 +81,19 @@ export async function syncCommand(
 
         const p = path.join(MUSIC_DIR, playlist.title);
 
+        if (dryRun) console.log("📜 DRY RUN 📜");
         console.log(`✨ Starting Playlist: ${playlist.title}\n`);
-        await downloadPlaylist(service, id, p, localVidIds);
+
+        // simulate forcing to download all songs again by making localvidids = []
+        if (force) {
+            console.log("🚨 Force Enabled 🚨");
+            localVidIds = [];
+        }
+        const downloadOptions: DownloadOption = {
+            format,
+            verbose,
+            dryRun,
+        };
+        await processPlaylist(service, id, p, downloadOptions, localVidIds);
     }
 }
