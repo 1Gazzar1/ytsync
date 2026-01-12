@@ -3,15 +3,23 @@ import { initCommand } from "@/commands/initCommand.js";
 import { syncCommand } from "@/commands/syncCommand.js";
 import { CommandFunc } from "@/types/CommandFunc.js";
 import { refreshTokenMiddleWare } from "@/middleware/authMiddleware.js";
-
 import { parseArgs } from "node:util";
 import { statusCommand } from "@/commands/statusCommand.js";
+import type { Flags } from "@/types/Flags.js";
+import { validateFormat } from "@/util/validateInput.js";
 
 const { values, positionals } = parseArgs({
     args: argv.slice(2),
-    options: {},
+    options: {
+        format: { type: "string", default: "mp3" },
+        "dry-run": { type: "boolean", default: false },
+        verbose: { type: "boolean", default: false, short: "v" },
+        force: { type: "boolean", default: false, short: "f" },
+    },
     allowPositionals: true,
 });
+
+validateFormat(values.format);
 
 const commandReg: Record<string, CommandFunc> = {
     help: helpCommand,
@@ -38,7 +46,7 @@ function main() {
         return;
     }
     try {
-        commandReg[positionals[0]](values, ...positionals.slice(1));
+        commandReg[positionals[0]](values as Flags, ...positionals.slice(1));
     } catch (error) {
         console.error(error);
     }
