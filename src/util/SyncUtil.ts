@@ -54,13 +54,7 @@ export async function processPlaylist(
         const total = vidInfos.length;
         const alreadyHas = localVidIds.length;
         const toAdd = vidsToBeDownloadedInfo.length;
-        console.log(`
-            📊 Total Songs: ${total}
-            ✅ Already have: ${alreadyHas} ${
-            alreadyHas === 0 ? "(new playlist)" : ""
-        }
-            ⬇️ Would Download: ${vidsToBeDownloadedInfo.length} 
-            `);
+        console.log(`\t📊 Total Songs: ${total}\n\t✅ Already have: ${alreadyHas} ${alreadyHas === 0 ? "(new playlist)" : ""}\n\t⬇️  Would Download: ${vidsToBeDownloadedInfo.length} `);
         if (toAdd > 0) {
             console.log("🎵 New songs:");
         }
@@ -71,7 +65,7 @@ export async function processPlaylist(
         const info = vidsToBeDownloadedInfo[i];
 
         if (dryRun) {
-            console.log(`\t${i}. ${info[1]}`);
+            console.log(`\t${i+1}. ${info[1]}`);
             continue;
         }
 

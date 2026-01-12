@@ -12,7 +12,7 @@ export function refreshTokenMiddleWare<
             await fn(flags, ...args);
         } catch (error: any) {
             console.log(error);
-            if (error.response.status === 401 && retires > 0) {
+            if (error?.response?.status === 401 && retires > 0) {
                 const tokens = await client.refreshAccessToken();
                 console.log("🗼Refreshed Tokens!");
 
