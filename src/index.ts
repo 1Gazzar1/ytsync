@@ -38,7 +38,7 @@ function main() {
         return;
     }
     try {
-        commandReg[positionals[0]](positionals.slice(1));
+        commandReg[positionals[0]](values, ...positionals.slice(1));
     } catch (error) {
         console.error(error);
     }

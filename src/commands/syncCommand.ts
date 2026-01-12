@@ -11,7 +11,10 @@ import path from "node:path";
 import prompts from "prompts";
 import { readStatusFile } from "@/util/readStatusFile.js";
 
-export async function syncCommand(args: string[]) {
+export async function syncCommand(
+    flags: Record<string, any>,
+    ...args: string[]
+) {
     const client = await getOauthClient();
 
     const service = google.youtube({

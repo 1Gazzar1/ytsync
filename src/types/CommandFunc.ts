@@ -1,1 +1,4 @@
-export type CommandFunc = (args: string[]) => Promise<void> | void;
+export type CommandFunc = (
+    flags: Record<string, any>,
+    ...args: string[]
+) => Promise<void> | void;

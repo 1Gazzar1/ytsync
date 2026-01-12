@@ -7,5 +7,6 @@
     - `--verbose`
     - `-f`
     - `--format`
+    - `--dry-run`
 
 5. write a readme (lol) with a tutorial on how to setup/use the app.
