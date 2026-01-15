@@ -40,7 +40,7 @@ export async function processPlaylist(
     localVidIds?: string[]
 ) {
     const vidInfos = await getVideoInfos(service, playlistId);
-
+    let vidIdsThatActuallySucceeded = [];
     const { verbose, format, dryRun } = options;
 
     // skip if user already has it
@@ -54,7 +54,11 @@ export async function processPlaylist(
         const total = vidInfos.length;
         const alreadyHas = localVidIds.length;
         const toAdd = vidsToBeDownloadedInfo.length;
-        console.log(`\t📊 Total Songs: ${total}\n\t✅ Already have: ${alreadyHas} ${alreadyHas === 0 ? "(new playlist)" : ""}\n\t⬇️  Would Download: ${vidsToBeDownloadedInfo.length} `);
+        console.log(
+            `\t📊 Total Songs: ${total}\n\t✅ Already have: ${alreadyHas} ${
+                alreadyHas === 0 ? "(new playlist)" : ""
+            }\n\t⬇️  Would Download: ${vidsToBeDownloadedInfo.length} `
+        );
         if (toAdd > 0) {
             console.log("🎵 New songs:");
         }
@@ -65,7 +69,7 @@ export async function processPlaylist(
         const info = vidsToBeDownloadedInfo[i];
 
         if (dryRun) {
-            console.log(`\t${i+1}. ${info[1]}`);
+            console.log(`\t${i + 1}. ${info[1]}`);
             continue;
         }
 
@@ -82,9 +86,15 @@ export async function processPlaylist(
         );
 
         const ytDlpOptions: ytDlp_Options = { verbose, songName };
-        await downloadSong(info[0], p, ytDlpOptions);
 
-        console.log(`✅ ${songName.title} Downloaded Successfully 🎵\n`);
+        //error handling if yt-dlp crashes and ruins everything.
+        try {
+            await downloadSong(info[0], p, ytDlpOptions);
+            vidIdsThatActuallySucceeded.push(info[0]);
+            console.log(`✅ ${songName.title} Downloaded Successfully 🎵\n`);
+        } catch (error) {
+            console.log(`❌ ${songName.title} Failed Unsuccessfully 🥲\n`);
+        }
     }
     // skip everything else if it's a dry run
     if (dryRun) return;
@@ -102,11 +112,10 @@ export async function processPlaylist(
     }
 
     // make a status.json file to track vid ids
-    const vidIds = vidInfos.map((t) => t[0]);
 
     const status = {
         playlistId,
-        vidIds,
+        vidIdsThatActuallySucceeded,
     };
     await fs.writeFile(
         path.join(p, "status.json"),
