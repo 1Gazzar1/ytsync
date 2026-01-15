@@ -61,7 +61,7 @@ node ./dist/index.js init
 ```
 
 2. copy paste your `CLIENT_ID` and `CLIENT_SECRET` from before.
-3. Go to the local server to continue with google, then copy paste your `access_token` and `refresh_token`
+3. Go to the local server to continue with google, it should automatically update your config file (you can add `--manual` with `init`)
 
 4. You're Done! you can CTRL + C to exit the terminal now.
 
@@ -85,6 +85,10 @@ there's also different flags you can use
 
 -   status: show all your local music and their diffs to the youtube ones.
 
-## TODOs:
+## What does `sync` do ?
 
-3. make the server automatically add the refresh and access tokens in the config file.
+when you sync a playlist it downloads that playlist to HOME/ytsync_Music/<NameOfPlaylist>
+
+and in that directory it saves a `status.json` file that keeps track of the playlist id and the songs inside by their id.
+
+`deleting` a song doesn't actually do anything, it just makes it invisible to the app, as the app reads the `status.json` file.

@@ -1,14 +1,10 @@
 import { SongName } from "@/types/SongName.js";
-import { exec } from "child_process";
 import { spawn } from "node:child_process";
-import { promisify } from "node:util";
 
 export type ytDlp_Options = {
     verbose: boolean;
     songName: SongName;
 };
-
-const execAsync = promisify(exec);
 
 export async function downloadSong(
     id: string,

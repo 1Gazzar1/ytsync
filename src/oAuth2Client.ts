@@ -18,6 +18,4 @@ export async function getOauthClient() {
 
     return client;
 }
-export const SCOPES = [
-    "https://www.googleapis.com/auth/youtube.readonly",
-];
+export const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"];

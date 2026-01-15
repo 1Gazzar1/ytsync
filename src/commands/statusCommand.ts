@@ -1,5 +1,9 @@
 import { getOauthClient } from "@/oAuth2Client.js";
-import { readStatusFile, statusFileType } from "@/util/readStatusFile.js";
+import {
+    readStatusFile,
+    StatusFileType,
+    vidIdsType,
+} from "@/util/StatusFile.js";
 import { getMusicSubDirs, MUSIC_DIR } from "@/util/SyncUtil.js";
 import { getFormattedPlaylists, getVideoInfos } from "@/util/Youtube.js";
 import { google } from "googleapis";
@@ -18,7 +22,7 @@ export async function statusCommand(...args: any[]) {
         auth: client,
     });
     // get all the local playlist ids
-    let localPlaylistInfo: statusFileType[] = [];
+    let localPlaylistInfo: StatusFileType[] = [];
     let localPlaylistIds = [];
     for (const dir of dirs) {
         const p = path.join(MUSIC_DIR, dir);
@@ -33,11 +37,14 @@ export async function statusCommand(...args: any[]) {
     );
     // parallel requests
     const remotePlaylistIds = await Promise.all(
-        remotePlaylists.map(async (pl): Promise<statusFileType> => {
-            const vidIds = (await getVideoInfos(service, pl.id)).map(
-                (vid) => vid[0]
-            );
-            return { playlistId: pl.id, vidIds };
+        remotePlaylists.map(async (pl): Promise<StatusFileType> => {
+            const vidIds = await getVideoInfos(service, pl.id);
+
+            const lst: vidIdsType[] = [];
+            vidIds.forEach((k, v) => {
+                lst.push({ id: k, title: v });
+            });
+            return { playlistId: pl.id, vidIds: lst };
         })
     );
 
@@ -55,8 +62,8 @@ export async function statusCommand(...args: any[]) {
             );
 
         const { added, removed, sameCount } = diffPlaylists(
-            localPlaylist.vidIds,
-            remotePlaylist.vidIds
+            localPlaylist.vidIds.map((v) => v.id),
+            remotePlaylist.vidIds.map((v) => v.id)
         );
 
         const chosenOne = remotePlaylists.find(
@@ -80,7 +87,7 @@ export async function statusCommand(...args: any[]) {
         }
     }
 }
-function diffPlaylists(local: string[], remote: string[]) {
+export function diffPlaylists(local: string[], remote: string[]) {
     const localSet = new Set(local);
     const remoteSet = new Set(remote);
 

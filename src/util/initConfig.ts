@@ -10,7 +10,9 @@ async function ensureConfig() {
     await fs.mkdir(YTSYNC, { recursive: true });
 
     try {
-        await fs.writeFile(CONFIG_FILE, "{}", { flag: "wx" });
+        await fs.writeFile(CONFIG_FILE, `{}`, {
+            flag: "wx",
+        });
     } catch (err: any) {
         if (err.code !== "EEXIST") throw err;
     }
@@ -25,7 +27,17 @@ export async function modifyConfig(config: Partial<Config>) {
 
 export async function readConfig() {
     await ensureConfig();
-    const txt = (await fs.readFile(CONFIG_FILE)).toString();
 
-    return JSON.parse(txt) as Partial<Config>;
+    const raw = await fs.readFile(CONFIG_FILE, "utf8");
+
+    if (!raw.trim()) {
+        const defaultConfig = {
+            CLIENT_ID: "",
+            CLIENT_SECRET: "",
+        };
+        await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+        return defaultConfig;
+    }
+
+    return JSON.parse(raw);
 }

@@ -9,8 +9,9 @@ import { getFormattedPlaylists } from "@/util/Youtube.js";
 import { google } from "googleapis";
 import path from "node:path";
 import prompts from "prompts";
-import { readStatusFile } from "@/util/readStatusFile.js";
+import { readStatusFile, vidIdsType } from "@/util/StatusFile.js";
 import { DownloadOption, Flags } from "@/types/Flags.js";
+import { sanitizeString } from "@/util/sanitizeString.js";
 
 export async function syncCommand(flags: Flags, ...args: string[]) {
     const client = await getOauthClient();
@@ -47,10 +48,14 @@ export async function syncCommand(flags: Flags, ...args: string[]) {
     } else {
         // automatically get playlists that the user wrote.
         for (let i = 0; i < args.length; i++) {
-            const userPlaylistTitle = args[i].toLowerCase().trim();
+            const userPlaylistTitle = sanitizeString(
+                args[i].toLowerCase().trim()
+            );
 
             const chosenOne = playlists.find(
-                (pl) => pl.title.toLocaleLowerCase() === userPlaylistTitle
+                (pl) =>
+                    sanitizeString(pl.title.toLocaleLowerCase()) ===
+                    userPlaylistTitle
             );
 
             if (!chosenOne)
@@ -79,16 +84,18 @@ export async function syncCommand(flags: Flags, ...args: string[]) {
         if (!playlist)
             throw new Error("something that i can't explain happened lol");
 
+        const PLAYLIST_NAME = sanitizeString(playlist.title);
         const dirs = await getMusicSubDirs();
-        let localVidIds;
-        if (dirs.includes(playlist.title)) {
+        let localVidIds: vidIdsType[] = [];
+        if (dirs.includes(PLAYLIST_NAME)) {
             const obj = await readStatusFile(
-                path.join(MUSIC_DIR, playlist.title)
+                path.join(MUSIC_DIR, PLAYLIST_NAME)
             );
+
             localVidIds = obj.vidIds;
         }
 
-        const p = path.join(MUSIC_DIR, playlist.title);
+        const p = path.join(MUSIC_DIR, PLAYLIST_NAME);
 
         if (dryRun) console.log("📜 DRY RUN 📜");
         console.log(`✨ Starting Playlist: ${playlist.title}\n`);

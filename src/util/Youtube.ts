@@ -5,8 +5,8 @@ export type VidInfo = [vidId: string, vidTitle: string];
 export async function getVideoInfos(
     service: youtube_v3.Youtube,
     playlistId: string
-): Promise<VidInfo[]> {
-    /* returns a list of tuples (vidId , vidTitle) */
+) {
+    /* returns a hash map (vidId , vidTitle) */
     const videos = await service.playlistItems.list({
         playlistId: playlistId,
         part: ["snippet", "status"],
@@ -29,7 +29,8 @@ export async function getVideoInfos(
     if (!vidsInfo) throw new Error("failed to fetch Videos");
 
     const final = vidsInfo.filter((tuple) => !!tuple);
-    return final;
+    const hashMap = new Map(final);
+    return hashMap;
 }
 
 export async function getFormattedPlaylists(service: youtube_v3.Youtube) {
