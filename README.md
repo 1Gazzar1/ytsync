@@ -87,8 +87,13 @@ there's also different flags you can use
 
 ## What does `sync` do ?
 
-when you sync a playlist it downloads that playlist to HOME/ytsync_Music/<NameOfPlaylist>
+-   when you sync a playlist it downloads that playlist to `HOME/ytsync_Music/<NameOfPlaylist>`
 
-and in that directory it saves a `status.json` file that keeps track of the playlist id and the songs inside by their id.
+-   and in that directory it saves a `status.json` file that keeps track of the playlist id and the songs inside by their id and names.
 
-`deleting` a song doesn't actually do anything, it just makes it invisible to the app, as the app reads the `status.json` file.
+-   deleting a song doesn't actually do anything, it just makes it invisible to the app, as the app reads the `status.json` file.
+
+-   so adding / deleting songs manually does absolutely _nothing_.
+
+> You **SHOULD NOT** manually edit `status.json` file unless you know what you're doing.
+> Song names should be exactly like their equivilant in `status.json` ==> **don't change song names**.

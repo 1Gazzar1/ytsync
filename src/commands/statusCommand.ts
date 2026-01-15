@@ -1,4 +1,5 @@
 import { getOauthClient } from "@/oAuth2Client.js";
+import { sanitizeString } from "@/util/sanitizeString.js";
 import {
     readStatusFile,
     StatusFileType,
@@ -42,7 +43,7 @@ export async function statusCommand(...args: any[]) {
 
             const lst: vidIdsType[] = [];
             vidIds.forEach((k, v) => {
-                lst.push({ id: k, title: v });
+                lst.push({ id: k, title: sanitizeString(v) });
             });
             return { playlistId: pl.id, vidIds: lst };
         })

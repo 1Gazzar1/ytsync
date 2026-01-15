@@ -112,7 +112,10 @@ export async function processPlaylist(
         //error handling if yt-dlp crashes and ruins everything.
         try {
             await downloadSong(info[0], p, ytDlpOptions);
-            vidIdsThatActuallySucceeded.push({ id: info[0], title: info[1] });
+            vidIdsThatActuallySucceeded.push({
+                id: info[0],
+                title: `${info[1]}.${format}`,
+            });
             console.log(`✅ ${songName.title} Downloaded Successfully 🎵\n`);
         } catch (error) {
             console.log(`❌ ${songName.title} Failed Unsuccessfully 🥲\n`);
@@ -122,7 +125,7 @@ export async function processPlaylist(
     const now = Date.now();
     const secs = Math.round((now - time) / 1000); // in seconds
 
-    if (added.length === 0) {
+    if (added.length === 0 && removed.length === 0) {
         console.log("Already Up to date! 😇\n\n");
     } else {
         const timeSpent = `${Math.floor(secs / 60)
@@ -139,7 +142,7 @@ export async function processPlaylist(
         const songTitle = localVidIdsObj.find((v) => v.id === id)?.title;
         const _p = path.join(p, songTitle!);
         await fs.rm(_p);
-        console.log(`🗑️ Deleted ${songTitle}`);
+        console.log(`🗑️  Deleted ${songTitle}`);
     }
 
     // make a status.json file to track vid ids
