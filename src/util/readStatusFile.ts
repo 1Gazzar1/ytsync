@@ -6,9 +6,16 @@ export type statusFileType = { playlistId: string; vidIds: string[] };
 export async function readStatusFile(
     directoryPath: string
 ): Promise<statusFileType> {
-    const txt = (
-        await fs.readFile(path.join(directoryPath, "status.json"))
-    ).toString();
-    const obj: { playlistId: string; vidIds: string[] } = JSON.parse(txt);
-    return obj;
+    let returns: statusFileType;
+    try {
+        const buffer = await fs.readFile(
+            path.join(directoryPath, "status.json")
+        );
+        const txt = buffer.toString();
+        returns = JSON.parse(txt);
+    } catch {
+        console.log("status file doesn't exists\nwill create an empty one.");
+        returns = { playlistId: "", vidIds: [] };
+    }
+    return returns;
 }

@@ -1,6 +1,7 @@
 import express, { ErrorRequestHandler } from "express";
 import { config } from "dotenv";
 import { getOauthClient } from "@/oAuth2Client.js";
+import { modifyConfig } from "@/util/initConfig.js";
 
 config();
 
@@ -11,9 +12,23 @@ app.get("/callback", async (req, res) => {
     const { code } = req.query;
     const client = await getOauthClient();
     const { tokens } = await client.getToken(code as string);
-    // console.log(tokens);
-    res.send(`
-<!DOCTYPE html>
+    if (!tokens.access_token || !tokens.refresh_token)
+        throw new Error("Google is Weird 🥲");
+    const MANUAL = process.env.MANUAL as "false" | "true";
+
+    if (MANUAL === "false") {
+        await modifyConfig({
+            refresh_token: tokens.refresh_token,
+            access_token: tokens.access_token,
+        });
+        res.send(
+            "<h1>That's it 💯</h1> <h2> You Can go back to the terminal now!</h2> "
+        );
+    }
+    res.send(HTML(tokens));
+});
+
+const HTML = (tokens: any) => `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -21,96 +36,114 @@ app.get("/callback", async (req, res) => {
     <title>Your API Tokens</title>
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-        }
+    /* Vibrant accent derived from the background */
+    --primary: #e63946; 
+    --primary-hover: #ff4d5a;
+    
+    /* Sleek background gradient */
+    --bg-gradient: linear-gradient(135deg, #450a0a 0%, #2d062e 100%);
+    
+    /* Text colors for better readability */
+    --text-main: #ffffff;
+    --text-muted: #d1d1d1;
+    
+    /* Glassmorphism effect colors */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-gradient);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    color: var(--text-main);
+}
 
-        .copy-box {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 450px;
-            transition: transform 0.2s ease;
-        }
+.copy-box {
+    background-color: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(12px); /* Blurred glass effect */
+    padding: 32px;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-        .copy-box:hover {
-            transform: translateY(-2px);
-        }
+.copy-box:hover {
+    transform: translateY(-5px);
+    border-color: rgba(230, 57, 70, 0.3);
+}
 
-        h2 {
-            margin-top: 0;
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+h2 {
+    margin-top: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+}
 
-        .copy-text {
-            background-color: #f3f4f6;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            color: var(--text-main);
-            border: 1px solid #e5e7eb;
-            text-align: left;
-        }
+.copy-text {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 20px 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.95rem;
+    word-break: break-all;
+    color: #ffb3b8; /* Light pinkish tint for code readability */
+    border: 1px solid var(--glass-border);
+    text-align: left;
+}
 
-        button {
-            background-color: var(--primary);
-            color: #ffffff;
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-        }
+button {
+    background-color: var(--primary);
+    color: #ffffff;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+}
 
-        button:hover {
-            background-color: var(--primary-hover);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
+button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+}
 
-        button:active {
-            transform: scale(0.98);
-        }
+button:active {
+    transform: scale(0.97);
+}
 
-        .copied-msg {
-            color: #059669;
-            font-size: 0.85rem;
-            margin-top: 12px;
-            font-weight: 500;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
+.copied-msg {
+    color: #4ade80; /* Vibrant green */
+    font-size: 0.85rem;
+    margin-top: 16px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
 
-        .show-msg {
-            opacity: 1;
-        }
+.show-msg {
+    opacity: 1;
+}
     </style>
 </head>
 
@@ -155,9 +188,7 @@ app.get("/callback", async (req, res) => {
         }
     </script>
 </body>
-</html>
-    `);
-});
+</html>`;
 
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);

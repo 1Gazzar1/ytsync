@@ -19,7 +19,7 @@ export async function modifyConfig(config: Partial<Config>) {
     await ensureConfig();
     const oldFile = await readConfig();
     const newFile = { ...oldFile, ...config };
-    console.log("updated config: ", config);
+    // console.log("updated config: ", config);
     await fs.writeFile(CONFIG_FILE, JSON.stringify(newFile, null, 2));
 }
 

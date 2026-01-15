@@ -15,6 +15,7 @@ const { values, positionals } = parseArgs({
         "dry-run": { type: "boolean", default: false },
         verbose: { type: "boolean", default: false, short: "v" },
         force: { type: "boolean", default: false, short: "f" },
+        manual: { type: "boolean", default: false }, // only has effect in init command.
     },
     allowPositionals: true,
 });

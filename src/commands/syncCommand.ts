@@ -35,7 +35,7 @@ export async function syncCommand(flags: Flags, ...args: string[]) {
     if (args.length === 0) {
         const temp = await prompts([
             {
-                type: "multiselect",
+                type: "autocompleteMultiselect",
                 name: "playlistIds",
                 message: "What Playlist(s) do you want to sync ?",
                 choices: playlists?.map((pl) => {
@@ -47,7 +47,7 @@ export async function syncCommand(flags: Flags, ...args: string[]) {
     } else {
         // automatically get playlists that the user wrote.
         for (let i = 0; i < args.length; i++) {
-            const userPlaylistTitle = args[i].toLowerCase();
+            const userPlaylistTitle = args[i].toLowerCase().trim();
 
             const chosenOne = playlists.find(
                 (pl) => pl.title.toLocaleLowerCase() === userPlaylistTitle

@@ -19,13 +19,14 @@ It's intended use is for Music Playlists / Podcasts / Audio Books (basically aud
     3. Go To the [`Clients`](https://console.cloud.google.com/auth/client) Tab, then click `Create Client`.
     4. Set the Application Type to be `Web Application`, at **Authorized redirect URIs** add this exact uri: `http://localhost:5000/callback`
     5. Hit `Create` then store your `CLIENT_ID` and `CLIENT_SECRET` somewhere safe.
-    6. Click [`Data Access`](https://console.cloud.google.com/auth/scopes) tab on the left and click `Add or Remove Scopes` Then paste this into `Manually add Scopes` section, hit `add` then `update`.
+    6. Go to [`youtubei`](https://console.cloud.google.com/apis/library/youtube.googleapis.com) and **Enable** it.
+    7. Click [`Data Access`](https://console.cloud.google.com/auth/scopes) tab on the left and click `Add or Remove Scopes` Then paste this into `Manually add Scopes` section, hit `add` then `update`.
 
         make sure your scopes look like this:
 
      <img src="./repo-screenshots/image-1.png" alt="image" width="200"/>
 
-    7. Finally Add your Gmail accounts you want to use the CLI tool with in the [`Audience`](https://console.cloud.google.com/auth/audience) Tab as **Test Users**
+    8. Finally Add your Gmail accounts you want to use the CLI tool with in the [`Audience`](https://console.cloud.google.com/auth/audience) Tab as **Test Users**
 
 ## Installation
 
