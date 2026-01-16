@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { argv } from "node:process";
 import { initCommand } from "@/commands/initCommand.js";
 import { syncCommand } from "@/commands/syncCommand.js";
