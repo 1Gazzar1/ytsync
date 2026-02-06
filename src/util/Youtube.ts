@@ -4,32 +4,45 @@ import type { youtube_v3 } from "googleapis";
 export type VidInfo = [vidId: string, vidTitle: string];
 export async function getVideoInfos(
     service: youtube_v3.Youtube,
-    playlistId: string
+    playlistId: string,
 ) {
+    let allItems = [];
+    let _nextPageToken: string | undefined | null;
     /* returns a hash map (vidId , vidTitle) */
-    const videos = await service.playlistItems.list({
-        playlistId: playlistId,
-        part: ["snippet", "status"],
-        maxResults: 500,
-    });
-    const vidsInfo = videos.data.items?.map((vid) => {
-        if (
-            vid.status?.privacyStatus === "public" &&
-            vid.snippet?.resourceId?.videoId &&
-            vid.snippet?.title
-        ) {
-            const out: VidInfo = [
-                vid.snippet.resourceId.videoId,
-                vid.snippet.title,
-            ];
-            return out;
-        }
-    });
+    do {
+        const videos = await service.playlistItems.list({
+            playlistId: playlistId,
+            part: ["snippet", "status"],
+            maxResults: 500,
+            pageToken: _nextPageToken || undefined,
+        });
+        // console.log(videos.data.items);
+        // youtube always returns 50 results even if you specify more
+        // but it returns a token to use to get the next page (such a weird way to do it?)
+        _nextPageToken = videos.data.nextPageToken;
 
-    if (!vidsInfo) throw new Error("failed to fetch Videos");
+        const vidsInfo = videos.data.items?.map((vid) => {
+            if (
+                vid.status?.privacyStatus === "public" &&
+                vid.snippet?.resourceId?.videoId &&
+                vid.snippet?.title
+            ) {
+                // console.log(vid.snippet.title, vid.status.privacyStatus);
 
-    const final = vidsInfo.filter((tuple) => !!tuple);
-    const hashMap = new Map(final);
+                const out: VidInfo = [
+                    vid.snippet.resourceId.videoId,
+                    vid.snippet.title,
+                ];
+                return out;
+            }
+        });
+
+        if (!vidsInfo) throw new Error("failed to fetch Videos");
+
+        const final = vidsInfo.filter((tuple) => !!tuple);
+        allItems.push(...final);
+    } while (_nextPageToken);
+    const hashMap = new Map<string, string>(allItems);
     return hashMap;
 }
 
