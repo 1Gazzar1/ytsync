@@ -3,6 +3,8 @@ import prompts from "prompts";
 import { modifyConfig } from "@/util/initConfig.js";
 import { getOauthClient, SCOPES } from "@/oAuth2Client.js";
 import { Flags } from "@/types/Flags.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export async function initCommand(flags: Flags) {
     console.log("initializing...");
@@ -11,7 +13,10 @@ export async function initCommand(flags: Flags) {
     // run the small express server to get the tokens from google
     // simulate a promise to wait 5s for the server to init.
     // ask the user to give the client id and secret while it's starting.
-    const server = spawn("node", ["./dist/smallServer.js"], {
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const server = spawn("node", [`${__dirname}/smallServer.js`], {
         env: { ...process.env, MANUAL: manual.toString() },
         cwd: "./",
     });
