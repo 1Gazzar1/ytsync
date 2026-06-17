@@ -15,7 +15,9 @@ export async function initCommand(flags: Flags) {
     // ask the user to give the client id and secret while it's starting.
 
     const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
+    // to go back to the parent where the smallServer.js is
+    const __dirname = path.dirname(path.dirname(__filename));
+    
     const server = spawn("node", [`${__dirname}/smallServer.js`], {
         env: { ...process.env, MANUAL: manual.toString() },
         cwd: "./",
