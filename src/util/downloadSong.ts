@@ -1,6 +1,6 @@
 import { SongName } from "@/types/SongName.js";
 import { spawn } from "node:child_process";
-
+import which from "which";
 export type ytDlp_Options = {
     verbose: boolean;
     songName: SongName;
@@ -9,12 +9,12 @@ export type ytDlp_Options = {
 export async function downloadSong(
     id: string,
     path: string,
-    options: ytDlp_Options
+    options: ytDlp_Options,
 ) {
     const url = `https://www.youtube.com/watch?v=${id}`;
     const { verbose, songName } = options;
+    const ytDlpPath = await which("yt-dlp");
 
-    const isQuiet = verbose ? "" : "--quiet";
     const args = [
         "-x",
         "--audio-format",
@@ -29,27 +29,41 @@ export async function downloadSong(
     ];
 
     // Add quiet flag conditionally
-    if (isQuiet) {
-        args.push("--quiet"); // or whatever your isQuiet variable contains
+    if (!verbose) {
+        args.push("--quiet");
     }
 
     const runProcess = () => {
         return new Promise((resolve, reject) => {
-            const process = spawn("yt-dlp", args);
+            const child = spawn(ytDlpPath, args);
 
-            process.stdout.on("data", (data: Buffer) => {
-                const logs = data.toString("utf-8");
-                console.log(logs);
+            // Accumulate stderr logs in case of failure
+            let errorOutput = "";
+
+            child.stdout.on("data", (data: Buffer) => {
+                console.log(data.toString("utf-8"));
             });
-            process.on("close", (code) => {
+
+            child.stderr.on("data", (data: Buffer) => {
+                const errorStr = data.toString("utf-8");
+                errorOutput += errorStr;
+                console.error(`[yt-dlp stderr]: ${errorStr}`);
+            });
+
+            child.on("close", (code) => {
                 if (code === 0) {
                     resolve("");
                 } else {
-                    reject(new Error(`Process exited with code ${code}`));
+                    // Pass the actual stderr message to the reject block
+                    reject(
+                        new Error(
+                            `Process exited with code ${code}. Error: ${errorOutput.trim()}`,
+                        ),
+                    );
                 }
             });
 
-            process.on("error", (err) => {
+            child.on("error", (err) => {
                 reject(err);
             });
         });
